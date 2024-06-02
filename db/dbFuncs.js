@@ -87,3 +87,12 @@ exports.insertMessage = (username, date, category, message) => {
     console.log(error);
   }
 };
+
+exports.getMessages = async (category) => {
+  const res = await messagesCollection.find({ category }).toArray();
+  if (res) {
+    return { status: 200, data: res };
+  } else {
+    return { status: 404 };
+  }
+};

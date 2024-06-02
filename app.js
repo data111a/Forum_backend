@@ -2,9 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { WebSocket, WebSocketServer } = require("ws"); // Import the 'ws' library
-const { findUser, registerUser, insertMessage } = require("./db/dbFuncs");
+const {
+  findUser,
+  registerUser,
+  insertMessage,
+  getMessages,
+} = require("./db/dbFuncs");
 const jwt = require("jsonwebtoken");
-// const authMiddleware = require("./middleware/authMiddleware");
+const authMiddleware = require("./middleware/authMiddleware");
 const url = require("url");
 
 const app = express();
@@ -60,6 +65,13 @@ app.post("/users/add", async (req, res) => {
   }
 });
 
+app.get("/messages/get/:category", async (req, res) => {
+  const category = req.params.category;
+  const ress = await getMessages(category);
+  res.json(ress.data);
+});
+
+// !!!!!!!! THIS IS WEB SOCKET SECTION !!!!!!!! \\
 const rooms = {};
 
 wsServer.on("connection", (ws, req) => {
@@ -87,24 +99,10 @@ wsServer.on("connection", (ws, req) => {
           rooms[data.room].push(ws);
         }
         ws.room = data.room;
-        broadcast(ws.room, `User ${ws.username} joined room ${ws.room}`, null);
+        broadcast(ws.room, `Joined room ${ws.room}`, username);
         break;
 
       case "message":
-        const date = new Date();
-        insertMessage(
-          username,
-          {
-            day: date.getDate() + 1,
-            month: date.getMonth() + 1,
-            year: date.getFullYear(),
-            hour: date.getHours(),
-            minute: date.getMinutes(),
-            second: date.getSeconds(),
-          },
-          ws.room,
-          data.message
-        );
         broadcast(ws.room, data.message, username);
         break;
     }
@@ -113,19 +111,36 @@ wsServer.on("connection", (ws, req) => {
   ws.on("close", () => {
     if (ws.room && rooms[ws.room]) {
       rooms[ws.room] = rooms[ws.room].filter((client) => client !== ws);
-      broadcast(ws.room, `User ${ws.username} left room ${ws.room}`, null);
+      broadcast(ws.room, `Left room ${ws.room}`, username);
     }
   });
 });
 
 function broadcast(room, message, username) {
   // rooms[room][0].room = room;
+  const date = new Date();
+  const currDate = {
+    day: date.getDate() + 1,
+    month: date.getMonth() + 1,
+    year: date.getFullYear(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+    second: date.getSeconds(),
+  };
+
+  insertMessage(username, currDate, room, message);
   if (rooms[room]) {
     rooms[room].forEach((client) => {
       if (client.room === room) {
         if (client.readyState === WebSocket.OPEN) {
-          const mess = username ? `${username} : ${message}` : message;
-          client.send(JSON.stringify({ message: mess }));
+          const mess = message;
+          client.send(
+            JSON.stringify({
+              message: mess,
+              date: currDate,
+              username,
+            })
+          );
         }
       }
     });
