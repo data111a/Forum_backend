@@ -75,6 +75,10 @@ app.get("/messages/get/:category", async (req, res) => {
   res.json(ress.data);
 });
 
+app.get("/", (req, res) => {
+  res.send("HELLO WORLD");
+});
+
 // !!!!!!!! THIS IS WEB SOCKET SECTION !!!!!!!! \\
 const rooms = {};
 
