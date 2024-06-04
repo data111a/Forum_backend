@@ -1,6 +1,9 @@
 const { MongoClient, ObjectId } = require("mongodb");
 
-const url = "mongodb://localhost:27017/";
+const url =
+  "mongodb+srv://davitkikaleishvili551:RJuFF2Y2eLfwAgB3@form.jse6la9.mongodb.net/";
+
+// "mongodb://localhost:27017/";
 
 const client = new MongoClient(url);
 const db = client.db("Forum_DB");

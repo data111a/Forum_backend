@@ -9,16 +9,20 @@ const {
   getMessages,
 } = require("./db/dbFuncs");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const authMiddleware = require("./middleware/authMiddleware");
+const { createServer } = require("http");
 const url = require("url");
 
 const app = express();
-const PORT = 3000;
-const wsServer = new WebSocketServer({ port: 8080 });
-const clients = new Set();
+const PORT = process.env.PORT || 3000;
+const server = createServer(app);
+const wsServer = new WebSocketServer({ server });
+// const clients = new Set();
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "/public")));
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
@@ -147,6 +151,6 @@ function broadcast(room, message, username) {
   }
 }
 
-const s = app.listen(PORT, () => {
+const s = server.listen(PORT, () => {
   console.log(`listening to ${PORT}`);
 });
