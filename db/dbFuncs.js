@@ -1,7 +1,8 @@
 const { MongoClient, ObjectId } = require("mongodb");
 
-const url =
-  "mongodb+srv://davitkikaleishvili551:RJuFF2Y2eLfwAgB3@form.jse6la9.mongodb.net/";
+const db_password = process.env.DBPASS;
+
+const url = `mongodb+srv://davitkikaleishvili551:${db_password}@form.jse6la9.mongodb.net/`;
 
 // "mongodb://localhost:27017/";
 
