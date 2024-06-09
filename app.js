@@ -95,7 +95,7 @@ wsServer.on("connection", (ws, req) => {
 
   ws.on("message", (message) => {
     const data = JSON.parse(message);
-
+    console.log(data.date);
     switch (data.type) {
       case "join":
         if (!rooms[data.room]) {
@@ -111,7 +111,7 @@ wsServer.on("connection", (ws, req) => {
         break;
 
       case "message":
-        broadcast(ws.room, data.message, username);
+        broadcast(ws.room, data.message, username, data.date);
         break;
     }
   });
@@ -124,19 +124,10 @@ wsServer.on("connection", (ws, req) => {
   });
 });
 
-function broadcast(room, message, username) {
+function broadcast(room, message, username, date = {}) {
   // rooms[room][0].room = room;
-  const date = new Date();
-  const currDate = {
-    day: date.getDate() + 1,
-    month: date.getMonth() + 1,
-    year: date.getFullYear(),
-    hour: date.getHours(),
-    minute: date.getMinutes(),
-    second: date.getSeconds(),
-  };
 
-  insertMessage(username, currDate, room, message);
+  insertMessage(username, date, room, message);
   if (rooms[room]) {
     rooms[room].forEach((client) => {
       if (client.room === room) {
@@ -145,7 +136,7 @@ function broadcast(room, message, username) {
           client.send(
             JSON.stringify({
               message: mess,
-              date: currDate,
+              date,
               username,
             })
           );
