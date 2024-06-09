@@ -2,7 +2,7 @@ const { MongoClient, ObjectId } = require("mongodb");
 
 const db_password = process.env.DBPASS;
 
-const url = `mongodb+srv://davitkikaleishvili551:${db_password}@form.jse6la9.mongodb.net/`;
+const url = `mongodb+srv://davitkikaleishvili551:${db_password}@form.jse6la9.mongodb.net/?retryWrites=true&w=majority&appName=Form`;
 
 // "mongodb://localhost:27017/";
 
