@@ -97,7 +97,6 @@ wsServer.on("connection", (ws, req) => {
 
   ws.on("message", (message) => {
     const data = JSON.parse(message);
-    console.log(data.date);
     switch (data.type) {
       case "join":
         if (!rooms[data.room]) {
