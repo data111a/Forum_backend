@@ -14,8 +14,10 @@ const authMiddleware = require("./middleware/authMiddleware");
 const { createServer } = require("http");
 const url = require("url");
 
-const app = express();
 const PORT = process.env.PORT || 3000;
+const JWT_SEC = process.env.JWT_SEC || "change";
+
+const app = express();
 const server = createServer(app);
 const wsServer = new WebSocketServer({ server });
 // const clients = new Set();
@@ -29,8 +31,8 @@ app.post("/login", async (req, res) => {
   const userInDB = await findUser({ username });
   if (userInDB) {
     if (userInDB.password === password) {
-      const token = jwt.sign({ username: userInDB.username }, "changeItLater");
-      res.json({ status: 200, token });
+      const token = jwt.sign({ username: userInDB.username }, JWT_SEC);
+      res.json({ status: 200, token, username });
     } else {
       res.json({ status: 401 });
     }
@@ -62,8 +64,8 @@ app.post("/users/add", async (req, res) => {
   }
 
   if (regStatus) {
-    const token = jwt.sign({ username: newUser.username }, "changeItLater");
-    res.json({ status: 200, token });
+    const token = jwt.sign({ username: newUser.username }, JWT_SEC);
+    res.json({ status: 200, token, username });
   } else {
     res.json({ status: 404, message: "User not found after registration" });
   }
@@ -91,7 +93,7 @@ wsServer.on("connection", (ws, req) => {
     return;
   }
 
-  const username = jwt.verify(token, "changeItLater").username;
+  const username = jwt.verify(token, JWT_SEC).username;
 
   ws.on("message", (message) => {
     const data = JSON.parse(message);
@@ -107,7 +109,7 @@ wsServer.on("connection", (ws, req) => {
           rooms[data.room].push(ws);
         }
         ws.room = data.room;
-        broadcast(ws.room, `Joined room ${ws.room}`, username);
+        broadcast(ws.room, `Joined room ${ws.room}`, username, data.date);
         break;
 
       case "message":
